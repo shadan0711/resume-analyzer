@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Resume Analyzer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: #0f0f13;
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #e2e8f0;
+        }
+
+        .upload-card {
+            max-width: 520px;
+            margin: 0 auto 40px;
+            background: #1a1a24;
+            border: 1px solid #2d2d3d;
+            border-radius: 20px;
+            padding: 36px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .upload-card.compact {
+            max-width: 960px;
+            padding: 16px 24px;
+            border-radius: 14px;
+            margin-bottom: 24px;
+        }
+
+        .upload-card h2 {
+            text-align: center;
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 6px;
+            transition: all 0.4s ease;
+            overflow: hidden;
+        }
+
+        .upload-card p.subtitle {
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 24px;
+            transition: all 0.4s ease;
+            overflow: hidden;
+        }
+
+        .upload-card.compact h2,
+        .upload-card.compact p.subtitle {
+            display: none;
+        }
+
+        #form {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #form.horizontal {
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #form.horizontal input[type="file"] {
+            flex: 1.2;
+            margin-top: 0;
+            padding: 0 10px;
+            font-size: 13px;
+            height: 40px;
+        }
+
+        #form.horizontal select {
+            flex: 0.8;
+            margin-top: 0;
+            padding: 0 12px;
+            font-size: 13px;
+            height: 40px;
+        }
+
+        #form.horizontal button {
+            flex: 0 0 auto;
+            width: auto;
+            margin-top: 0;
+            padding: 9px 20px;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            background: #12121a;
+            border: 1px solid #2d2d3d;
+            border-radius: 10px;
+            color: #aaa;
+            font-size: 13px;
+            cursor: pointer;
+            height: 40px;
+            padding: 0 10px;
+            box-sizing: border-box;
+            line-height: 40px;
+        }
+
+        input[type="file"]::file-selector-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 13px;
+            height: 28px;
+            margin-right: 10px;
+            margin-bottom: 5px;
+            vertical-align: middle;
+            position: relative;
+            top: 0;
+        }
+
+        select {
+            width: 100%;
+            padding: 0 14px;
+            margin-top: 12px;
+            background: #12121a;
+            border: 1px solid #2d2d3d;
+            border-radius: 10px;
+            color: #ccc;
+            font-size: 13px;
+            font-family: inherit;
+            appearance: none;
+            height: 40px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 13px;
+            margin-top: 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .results-grid {
+            max-width: 960px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card-full {
+            grid-column: 1 / -1;
+        }
+
+        .card {
+            background: #1a1a24;
+            border: 1px solid #2d2d3d;
+            border-radius: 18px;
+            padding: 24px;
+            transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 16px 48px rgba(102, 126, 234, 0.18);
+            border-color: #667eea;
+        }
+
+        .card h3 {
+            font-weight: 600;
+            color: #a0aec0;
+            margin-bottom: 16px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+
+        .match-banner {
+            text-align: center;
+        }
+
+        .match-banner .headline {
+            font-size: 28px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .match-banner .sub {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .match-banner .sub b {
+            color: #c9d1d9;
+        }
+
+        .tip-box {
+            background: #1e1a0e;
+            border: 1px solid #4a3a10;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-top: 16px;
+            font-size: 13px;
+            color: #d4a017;
+            text-align: left;
+        }
+
+        .score-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 0;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #232330;
+            font-size: 14px;
+            color: #ccc;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-val {
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .tag-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .tag {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .tag.good {
+            background: #0d2e1a;
+            color: #4ade80;
+            border: 1px solid #166534;
+        }
+
+        .tag.bad {
+            background: #2e0d0d;
+            color: #f87171;
+            border: 1px solid #7f1d1d;
+        }
+
+        .roadmap-list {
+            list-style: none;
+        }
+
+        .roadmap-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #1e1e2e;
+            font-size: 14px;
+            color: #c9d1d9;
+        }
+
+        .roadmap-list li:last-child {
+            border-bottom: none;
+        }
+
+        .roadmap-list li .num {
+            min-width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .tl-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 13px;
+            color: #c9d1d9;
+        }
+
+        .tl-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #667eea;
+            flex-shrink: 0;
+        }
+
+        .ai-text p {
+            font-size: 14px;
+            color: #c9d1d9;
+            line-height: 1.7;
+            margin-bottom: 8px;
+        }
+
+        .insight-text {
+            font-size: 15px;
+            color: #c9d1d9;
+            line-height: 1.7;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+            padding: 11px 22px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            width: auto;
+        }
+
+        .download-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .error-msg {
+            max-width: 520px;
+            margin: 0 auto;
+            background: #2e0d0d;
+            border: 1px solid #7f1d1d;
+            border-radius: 12px;
+            padding: 16px 20px;
+            color: #f87171;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .loader {
+            max-width: 520px;
+            margin: 0 auto;
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+            padding: 20px;
+        }
+
+        @media (max-width: 640px) {
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card-full {
+                grid-column: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="upload-card">
+        <h2>Resume Skill Analyzer</h2>
+        <p class="subtitle">Upload your resume to analyze skill gaps and get a roadmap</p>
+        <form id="form">
+            <input type="file" name="resume" accept=".pdf,.docx" required />
+            <select name="role" required>
+                <option value="" disabled selected>Choose Role</option>
+                <option value="frontend">Frontend</option>
+                <option value="backend">Backend</option>
+                <option value="data">Data Science</option>
+                <option value="ai_ml">AI / ML</option>
+                <option value="android">Android Dev</option>
+                <option value="devops">DevOps</option>
+                <option value="cybersecurity">Cybersecurity</option>
+            </select>
+            <button type="submit">Analyze</button>
+        </form>
+    </div>
+
+    <div id="output"></div>
+
+    <script>
+        function generateJobLinks(role, skills) {
+            const roleKeywords = {
+                frontend: "Frontend Developer",
+                backend: "Backend Developer",
+                data: "Data Analyst",
+                ai_ml: "Machine Learning Engineer",
+                android: "Android Developer",
+                devops: "DevOps Engineer",
+                cybersecurity: "Cybersecurity Analyst"
+            };
+
+            const query = encodeURIComponent(roleKeywords[role] || role);
+            const topSkill = skills.length > 0 ? encodeURIComponent(skills[0]) : query;
+
+            const platforms = [
+                {
+                    name: "LinkedIn",
+                    icon: "🔗",
+                    url: `https://www.linkedin.com/jobs/search/?keywords=${query}`
+                },
+                {
+                    name: "Indeed",
+                    icon: "🔍",
+                    url: `https://in.indeed.com/jobs?q=${query}`
+                },
+                {
+                    name: "Internshala",
+                    icon: "🎓",
+                    url: `https://internshala.com/internships/${role}-internship`
+                },
+                {
+                    name: "Naukri",
+                    icon: "💼",
+                    url: `https://www.naukri.com/${role.replace("_", "-")}-jobs`
+                },
+                {
+                    name: "Wellfound",
+                    icon: "🚀",
+                    url: `https://wellfound.com/role/r/${roleKeywords[role]?.toLowerCase().replace(/ /g, "-") || role}`
+                }
+            ];
+
+            return platforms.map(p => `
+    <a href="${p.url}" target="_blank" style="
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      background: #12121a;
+      border: 1px solid #2d2d3d;
+      border-radius: 10px;
+      color: #c9d1d9;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: border-color 0.2s, transform 0.2s;
+      font-family: inherit;
+    "
+    onmouseover="this.style.borderColor='#667eea'; this.style.transform='translateY(-2px)'"
+    onmouseout="this.style.borderColor='#2d2d3d'; this.style.transform='translateY(0)'"
+    >
+      ${p.icon} ${p.name}
+    </a>
+  `).join("");
+        }
+        document.getElementById("form").onsubmit = async (e) => {
+            e.preventDefault();
+            const output = document.getElementById("output");
+            output.innerHTML = `<div class="loader">⏳ Analyzing your resume...</div>`;
+            document.querySelector('.upload-card').classList.add('compact');
+            document.getElementById('form').classList.add('horizontal');
+
+            const formData = new FormData(e.target);
+            const res = await fetch("/analyze", { method: "POST", body: formData });
+            const data = await res.json();
+
+            if (data.error) {
+                output.innerHTML = `<div class="error-msg">⚠️ ${data.error}</div>`;
+                return;
+            }
+
+            const scoreColor = data.match_score > 70 ? '#4ade80' : data.match_score > 40 ? '#facc15' : '#f87171';
+            const circumference = 345;
+            const offset = circumference - (circumference * data.match_score / 100);
+
+            output.innerHTML = `
+        <div class="results-grid">
+
+          <div class="card card-full match-banner">
+            <div class="headline">${data.match_score > 60 ? "🔥 Strong Match" : "⚠️ Needs Improvement"}</div>
+            <div class="sub">
+              Selected: <b>${formData.get("role").toUpperCase()}</b> &nbsp;|&nbsp;
+              Best fit: <b>${data.best_role.toUpperCase()}</b> (${data.best_score}%)
+            </div>
+            ${data.message ? `<div class="tip-box">💡 ${data.message}</div>` : ""}
+          </div>
+
+          <div class="card">
+            <h3>📊 Match Score</h3>
+            <div class="score-wrap">
+              <svg width="130" height="130">
+                <circle cx="65" cy="65" r="55" stroke="#2d2d3d" stroke-width="10" fill="none"/>
+                <circle cx="65" cy="65" r="55"
+                  stroke="${scoreColor}" stroke-width="10" fill="none"
+                  stroke-dasharray="${circumference}"
+                  stroke-dashoffset="${offset}"
+                  stroke-linecap="round"
+                  transform="rotate(-90 65 65)"
+                />
+                <text x="50%" y="50%" text-anchor="middle" dy=".35em"
+                  font-size="22" font-weight="700" fill="white" font-family="Space Grotesk, sans-serif">
+                  ${data.match_score}%
+                </text>
+              </svg>
+              <p style="color:#888; font-size:13px; margin-top:12px;">match with selected role</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>🎯 Role Analysis</h3>
+            <div class="stat-row"><span>Selected Role</span><span class="stat-val">${formData.get("role").toUpperCase()}</span></div>
+            <div class="stat-row"><span>Match Score</span><span class="stat-val" style="color:${scoreColor}">${data.match_score}%</span></div>
+            <div class="stat-row"><span>Best Fit Role</span><span class="stat-val">${data.best_role.toUpperCase()}</span></div>
+            <div class="stat-row"><span>Best Fit Score</span><span class="stat-val">${data.best_score}%</span></div>
+            <div class="stat-row"><span>Skills Found</span><span class="stat-val">${data.skills_found.length}</span></div>
+            <div class="stat-row"><span>Skills Missing</span><span class="stat-val" style="color:#f87171">${data.missing.length}</span></div>
+          </div>
+
+          <div class="card card-full">
+            <h3>🧠 Skills Breakdown</h3>
+            <p style="font-size:13px; color:#4ade80; font-weight:600; margin-bottom:8px;">✔ You have</p>
+            <div class="tag-wrap">${data.present.map(s => `<span class="tag good">${s}</span>`).join("")}</div>
+            <p style="font-size:13px; color:#f87171; font-weight:600; margin-top:18px; margin-bottom:8px;">✖ Missing</p>
+            <div class="tag-wrap">${data.missing.map(s => `<span class="tag bad">${s}</span>`).join("")}</div>
+          </div>
+
+          <div class="card">
+            <h3>🚀 Learning Roadmap</h3>
+            <ul class="roadmap-list">
+              ${data.roadmap.map((s, i) => `
+                <li><span class="num">${i + 1}</span><span>${s}</span></li>
+              `).join("")}
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>📅 Learning Timeline</h3>
+            <div class="timeline">
+              ${data.timeline.map(item => `
+                <div class="tl-item"><div class="tl-dot"></div><span>${item}</span></div>
+              `).join("")}
+            </div>
+          </div>
+
+          <div class="card card-full">
+            <h3>🤖 AI Guidance</h3>
+            <div class="ai-text">
+              ${data.explanation.split("\n").map(l => l.trim() ? `<p>${l}</p>` : "").join("")}
+            </div>
+          </div>
+
+          <div class="card card-full">
+            <h3>💡 Insight</h3>
+            <p class="insight-text">
+              ${data.match_score > 70
+                    ? "You're close to job-ready for this role. Focus on projects and real-world practice."
+                    : data.match_score > 40
+                        ? "You have a solid base but need to fill key gaps. Follow the roadmap above."
+                        : "You need to build core skills before targeting this role. Start from must-have skills."}
+            </p>
+          </div>
+
+          <div class="card card-full">
+            <h3>💼 Job Suggestions</h3>
+            <p style="color:#888; font-size:13px; margin-bottom:16px;">
+              Based on your skills and selected role — click to open live job searches
+            </p>
+            <div class="tag-wrap" style="gap:12px;">
+              ${generateJobLinks(formData.get("role"), data.present)}
+            </div>
+          </div>
+
+          <div class="card card-full" style="text-align:center;">
+            <h3>📄 Export</h3>
+            <p style="color:#888; font-size:13px; margin-bottom:4px;">Download your roadmap and timeline as a PDF</p>
+            <button class="download-btn" id="downloadBtn">⬇ Download Roadmap PDF</button>
+          </div>
+
+        </div>
+      `;
+
+            window._lastResult = { ...data, role: formData.get("role") };
+
+            document.getElementById("downloadBtn").onclick = async () => {
+                const btn = document.getElementById("downloadBtn");
+                btn.textContent = "⏳ Generating...";
+                btn.disabled = true;
+                try {
+                    const res = await fetch("/download-roadmap", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(window._lastResult)
+                    });
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `roadmap_${window._lastResult.role}.pdf`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                } catch (err) {
+                    alert("Failed to generate PDF.");
+                }
+                btn.textContent = "⬇ Download Roadmap PDF";
+                btn.disabled = false;
+            };
+        };
+    </script>
+
+</body>
+
+</html>

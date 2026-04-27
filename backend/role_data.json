@@ -1,0 +1,37 @@
+{
+    "frontend": {
+      "must": ["html", "css", "javascript"],
+      "core": ["react", "git"],
+      "optional": ["typescript", "tailwind"]
+    },
+    "backend": {
+      "must": ["python", "sql"],
+      "core": ["node", "mongodb"],
+      "optional": ["docker", "api"]
+    },
+    "data": {
+      "must": ["python", "sql"],
+      "core": ["pandas", "numpy"],
+      "optional": ["machine learning", "excel"]
+    },
+    "ai_ml": {
+      "must": ["python", "math"],
+      "core": ["machine learning", "numpy", "pandas"],
+      "optional": ["deep learning", "tensorflow"]
+    },
+    "android": {
+      "must": ["java", "kotlin"],
+      "core": ["android sdk", "xml"],
+      "optional": ["firebase"]
+    },
+    "devops": {
+      "must": ["linux", "git"],
+      "core": ["docker", "ci/cd"],
+      "optional": ["kubernetes", "aws"]
+    },
+    "cybersecurity": {
+      "must": ["networking", "linux"],
+      "core": ["security", "cryptography"],
+      "optional": ["ethical hacking"]
+    }
+  }
